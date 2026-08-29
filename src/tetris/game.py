@@ -138,8 +138,6 @@ class Tetris:
                         if not validSpace(self.currentPiece, self.grid):
                             self.currentPiece.x += 1
 
-                            lockPiece(self.currentPiece, self.locked_pos)
-
                     elif event.key == pygame.K_RIGHT:
                         self.currentPiece.x += 1
                         if not validSpace(self.currentPiece, self.grid):
