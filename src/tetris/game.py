@@ -21,6 +21,7 @@ def createGrid(locked_pos = {}):
             if (x, y) in locked_pos:
                 c = locked_pos[(x, y)]
                 grid[y][x] = c
+
     return grid
 
 def checkEmptyCells(grid):
@@ -90,6 +91,33 @@ def validSpace(currentPiece, grid):
 
     return True
 
+def deleteRow(grid, locked_pos):
+    completed = [
+        y for y in range(len(grid))
+        if all(cell != (0, 0, 0) for cell in grid[y])
+    ]
+
+    if not completed:
+        return 0
+
+    for y in completed:
+        for x in range(10):
+            if (x, y) in locked_pos:
+                del locked_pos[(x, y)]
+
+    new_locked_pos = {}
+
+    for (x, y), color in locked_pos.items():
+        rows_below = sum(1 for completed_y in completed if completed_y > y)
+
+        new_y = y + rows_below
+        new_locked_pos[(x, new_y)] = color
+
+    locked_pos.clear()
+    locked_pos.update(new_locked_pos)
+
+    return len(completed)
+
 def getPiece():
     shape = random.choice(piece.shapes)
 
@@ -104,6 +132,17 @@ def getPiece():
 
     return piece.piece(spawn_x, spawn_y, shape)
 
+def testPiece():
+    cells = piece.getShapeCells(piece.shapes[3], 0)
+    
+    shape_width = max(x for x, y in cells) + 1
+    
+    board_width = 10
+    
+    spawn_x = (board_width - shape_width) // 2
+    spawn_y = 0
+    
+    return piece.piece(spawn_x, spawn_y, piece.shapes[3])
 class Tetris:
     def __init__(self):
         self.locked_pos = {}
@@ -150,9 +189,15 @@ class Tetris:
                         self.currentPiece.y -= 1
 
                         lockPiece(self.currentPiece, self.locked_pos)
+
+                        self.grid = createGrid(self.locked_pos)
+
+                        rows_deleted = deleteRow(self.grid, self.locked_pos)
+
+                        self.grid = createGrid(self.locked_pos)
+
                         self.currentPiece = self.nextPiece
                         self.nextPiece = getPiece()
-                        self.grid = createGrid(self.locked_pos)
 
             keys = pygame.key.get_pressed()
 
@@ -174,10 +219,12 @@ class Tetris:
 
                     lockPiece(self.currentPiece, self.locked_pos)
 
+                    self.grid = createGrid(self.locked_pos)
+                    rows_deleted = deleteRow(self.grid, self.locked_pos)
+                    self.grid = createGrid(self.locked_pos)
+
                     self.currentPiece = self.nextPiece
                     self.nextPiece = getPiece()
-
-                    self.grid = createGrid(self.locked_pos)
 
                 fall_timer = 0
 
