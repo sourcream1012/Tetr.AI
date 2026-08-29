@@ -132,17 +132,6 @@ def getPiece():
 
     return piece.piece(spawn_x, spawn_y, shape)
 
-def testPiece():
-    cells = piece.getShapeCells(piece.shapes[3], 0)
-    
-    shape_width = max(x for x, y in cells) + 1
-    
-    board_width = 10
-    
-    spawn_x = (board_width - shape_width) // 2
-    spawn_y = 0
-    
-    return piece.piece(spawn_x, spawn_y, piece.shapes[3])
 class Tetris:
     def __init__(self):
         self.locked_pos = {}
@@ -198,6 +187,11 @@ class Tetris:
 
                         self.currentPiece = self.nextPiece
                         self.nextPiece = getPiece()
+
+                    elif event.key == pygame.K_UP:
+                        self.currentPiece.rotation += 1
+                        if not validSpace(self.currentPiece, self.grid):
+                            self.currentPiece.rotation -= 1
 
             keys = pygame.key.get_pressed()
 

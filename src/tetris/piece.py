@@ -138,12 +138,6 @@ class piece:
         self.shape = shape
         self.color = shape_colors[shapes.index(shape)]
         self.rotation = 0
-
-    def move(self, newX=None, newY=None):
-        if newX is not None:
-            self.x = newX
-        if newY is not None:
-            self.y = newY
         
         
         
