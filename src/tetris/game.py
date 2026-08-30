@@ -231,7 +231,7 @@ class Tetris:
         ):
             self.current_piece.y -= 1
 
-    def hard_drop(self):
+    def hard_drop(self, fall_timer):
         while is_valid_space(
             self.current_piece,
             self.grid,
@@ -239,6 +239,28 @@ class Tetris:
             self.current_piece.y += 1
         
         self.current_piece.y -= 1
+        
+        lock_piece(
+            self.current_piece,
+            self.locked_positions,
+        )
+        
+        self.grid = create_grid(self.locked_positions)
+        delete_rows(
+            self.grid,
+            self.locked_positions,
+        )
+        self.grid = create_grid(self.locked_positions)
+        
+        self.current_piece = self.next_piece
+        self.next_piece = get_piece()
+        
+        if not is_valid_space(
+            self.current_piece,
+            self.grid,
+        ):
+            self.reset()
+            fall_timer = 0
 
     def start_ai_env(self):
         """Starts a Tetris game without rendering with Pygame. Used for training the AI."""
