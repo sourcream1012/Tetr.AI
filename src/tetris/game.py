@@ -330,73 +330,21 @@ class Tetris:
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        self.current_piece.x -= 1
-
-                        if not is_valid_space(
-                            self.current_piece,
-                            self.grid,
-                        ):
-                            self.current_piece.x += 1
+                        self.move_left()
 
                     elif event.key == pygame.K_RIGHT:
-                        self.current_piece.x += 1
-
-                        if not is_valid_space(
-                            self.current_piece,
-                            self.grid,
-                        ):
-                            self.current_piece.x -= 1
+                        self.move_right()
 
                     elif event.key == pygame.K_SPACE:
-                        while is_valid_space(
-                            self.current_piece,
-                            self.grid,
-                        ):
-                            self.current_piece.y += 1
-
-                        self.current_piece.y -= 1
-
-                        lock_piece(
-                            self.current_piece,
-                            self.locked_positions,
-                        )
-
-                        self.grid = create_grid(self.locked_positions)
-                        delete_rows(
-                            self.grid,
-                            self.locked_positions,
-                        )
-                        self.grid = create_grid(self.locked_positions)
-
-                        self.current_piece = self.next_piece
-                        self.next_piece = get_piece()
-
-                        if not is_valid_space(
-                            self.current_piece,
-                            self.grid,
-                        ):
-                            self.reset()
-                            fall_timer = 0
+                        self.hard_drop(fall_timer)
 
                     elif event.key == pygame.K_UP:
-                        self.current_piece.rotation += 1
-
-                        if not is_valid_space(
-                            self.current_piece,
-                            self.grid,
-                        ):
-                            self.current_piece.rotation -= 1
+                        self.rotate()
 
             keys = pygame.key.get_pressed()
 
             if keys[pygame.K_DOWN]:
-                self.current_piece.y += 1
-
-                if not is_valid_space(
-                    self.current_piece,
-                    self.grid,
-                ):
-                    self.current_piece.y -= 1
+                self.soft_drop()
 
             fall_timer += dt
 
