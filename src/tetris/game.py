@@ -156,6 +156,21 @@ def get_piece():
 
     return piece.Piece(spawn_x, spawn_y, shape)
 
+def print_grid(grid, current_piece):
+    # FOR TESTING PURPOSES
+    display_grid = [row[:] for row in grid]
+
+    for x, y in piece.get_piece_positions(current_piece):
+        if 0 <= y < BOARD_HEIGHT and 0 <= x < BOARD_WIDTH:
+            display_grid[y][x] = current_piece.color
+
+    for row in display_grid:
+        print(
+            " ".join(
+                "." if cell == BLACK else "#"
+                for cell in row
+            )
+        )
 
 class Tetris:
     def __init__(self):
@@ -172,10 +187,62 @@ class Tetris:
         self.next_piece = get_piece()
         self.score = 0
 
-    def start_no_render(self):
-        """Starts a Tetris game without rendering with Pygame."""
-        pass
+    def format_ai_readable(self):
+        new_grid = [[0 for _ in range(10)] for _ in range(20)]
 
+        for row in self.grid:
+            for cell in self.grid:
+                if cell != (0, 0, 0):
+                    new_grid[row][cell] = 1
+
+    def start_no_render(self):
+        """Starts a Tetris game without rendering with Pygame. Used for training the AI."""
+        clock = pygame.time.Clock()
+        fall_timer = 0
+        fall_speed = 0.5
+
+        while True:
+            dt = clock.tick(60) / 1000
+            fall_timer += dt
+
+            if fall_timer >= fall_speed:
+                self.current_piece.y += 1
+
+                if not is_valid_space(
+                    self.current_piece,
+                    self.grid,
+                ):
+                    self.current_piece.y -= 1
+
+                    lock_piece(
+                        self.current_piece,
+                        self.locked_positions,
+                    )
+
+                    self.grid = create_grid(self.locked_positions)
+
+                    delete_rows(
+                        self.grid,
+                        self.locked_positions,
+                    )
+
+                    self.grid = create_grid(self.locked_positions)
+
+                    self.current_piece = self.next_piece
+                    self.next_piece = get_piece()
+
+                    if not is_valid_space(
+                        self.current_piece,
+                        self.grid,
+                    ):
+                        self.reset()
+                        fall_timer = 0
+
+                fall_timer = 0
+
+                print_grid(self.grid, self.current_piece)
+                print()  
+        
     def start(self):
         """Starts a Tetris game while rendering with Pygame."""
         clock = pygame.time.Clock()
