@@ -195,7 +195,52 @@ class Tetris:
                 if cell != (0, 0, 0):
                     new_grid[row][cell] = 1
 
-    def start_no_render(self):
+    def move_left(self):
+        self.current_piece.x -= 1
+        
+        if not is_valid_space(
+            self.current_piece,
+            self.grid,
+        ):
+            self.current_piece.x += 1
+
+    def move_right(self):
+        self.current_piece.x += 1
+                
+        if not is_valid_space(
+            self.current_piece,
+            self.grid,
+        ):
+            self.current_piece.x -= 1
+
+    def rotate(self):
+        self.current_piece.rotation += 1
+                
+        if not is_valid_space(
+            self.current_piece,
+            self.grid,
+        ):
+            self.current_piece.rotation -= 1
+
+    def soft_drop(self):
+        self.current_piece.y += 1
+        
+        if not is_valid_space(
+            self.current_piece,
+            self.grid,
+        ):
+            self.current_piece.y -= 1
+
+    def hard_drop(self):
+        while is_valid_space(
+            self.current_piece,
+            self.grid,
+        ):
+            self.current_piece.y += 1
+        
+        self.current_piece.y -= 1
+
+    def start_ai_env(self):
         """Starts a Tetris game without rendering with Pygame. Used for training the AI."""
         clock = pygame.time.Clock()
         fall_timer = 0
