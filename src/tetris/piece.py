@@ -103,7 +103,7 @@ T = [['.....',
 shapes = [S, Z, I, O, J, L, T]
 shape_colors = [(0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 255, 0), (255, 165, 0), (0, 0, 255), (128, 0, 128)]
 
-def getShapeCells(shape, rotation=0):
+def get_shape_cells(shape, rotation=0):
     current_shape = shape[rotation % len(shape)]
 
     cells = []
@@ -123,15 +123,15 @@ def getShapeCells(shape, rotation=0):
     ]
 
 
-def getPiecePositions(piece):
-    cells = getShapeCells(piece.shape, piece.rotation)
+def get_piece_positions(piece):
+    cells = get_shape_cells(piece.shape, piece.rotation)
 
     return [
         (piece.x + x, piece.y + y)
         for x, y in cells
     ]
 
-class piece:
+class Piece:
     def __init__(self, x, y, shape):
         self.x = x
         self.y = y
