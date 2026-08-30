@@ -140,6 +140,13 @@ class Tetris:
         self.nextPiece = getPiece()
         self.score = 0
 
+    def reset(self):
+        self.locked_pos = {}
+        self.grid = createGrid(self.locked_pos)
+        self.currentPiece = getPiece()
+        self.nextPiece = getPiece()
+        self.score = 0
+
     def startNoRender(self):
         """Starts a tetris game without rendering with pygame."""
      
@@ -177,7 +184,7 @@ class Tetris:
 
                         self.currentPiece.y -= 1
 
-                        lockPiece(self.currentPiece, self.locked_pos)
+                        lost = lockPiece(self.currentPiece, self.locked_pos)
 
                         self.grid = createGrid(self.locked_pos)
 
@@ -187,6 +194,10 @@ class Tetris:
 
                         self.currentPiece = self.nextPiece
                         self.nextPiece = getPiece()
+
+                        if not validSpace(self.currentPiece, self.grid):
+                            self.reset()
+                            fall_timer = 0
 
                     elif event.key == pygame.K_UP:
                         self.currentPiece.rotation += 1
@@ -219,6 +230,10 @@ class Tetris:
 
                     self.currentPiece = self.nextPiece
                     self.nextPiece = getPiece()
+
+                    if not validSpace(self.currentPiece, self.grid):
+                        self.reset()
+                        fall_timer = 0
 
                 fall_timer = 0
 
