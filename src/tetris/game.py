@@ -179,6 +179,8 @@ class Tetris:
         self.current_piece = get_piece()
         self.next_piece = get_piece()
         self.score = 0
+        self.fall_timer = 0
+        self.fall_speed = 0.75
 
     def reset(self):
         self.locked_positions = {}
@@ -186,6 +188,8 @@ class Tetris:
         self.current_piece = get_piece()
         self.next_piece = get_piece()
         self.score = 0
+        self.fall_timer = 0
+        self.fall_speed = 0.75
 
     def format_ai_readable(self):
         new_grid = [[0 for _ in range(10)] for _ in range(20)]
@@ -231,7 +235,7 @@ class Tetris:
         ):
             self.current_piece.y -= 1
 
-    def hard_drop(self, fall_timer):
+    def hard_drop(self):
         while is_valid_space(
             self.current_piece,
             self.grid,
@@ -260,55 +264,55 @@ class Tetris:
             self.grid,
         ):
             self.reset()
-            fall_timer = 0
+            self.fall_timer = 0
+
+    def fall(self):
+        self.current_piece.y += 1
+        
+        if not is_valid_space(
+            self.current_piece,
+            self.grid,
+        ):
+            self.current_piece.y -= 1
+        
+            lock_piece(
+                self.current_piece,
+               self.locked_positions,
+            )
+        
+            self.grid = create_grid(self.locked_positions)
+        
+            delete_rows(
+                self.grid,
+                self.locked_positions,
+            )
+        
+            self.grid = create_grid(self.locked_positions)
+        
+            self.current_piece = self.next_piece
+            self.next_piece = get_piece()
+        
+            if not is_valid_space(
+                self.current_piece,
+                self.grid,
+            ):
+                self.reset()
+
+        self.fall_timer = 0
 
     def start_ai_env(self):
         """Starts a Tetris game without rendering with Pygame. Used for training the AI."""
         clock = pygame.time.Clock()
-        fall_timer = 0
-        fall_speed = 0.5
 
         while True:
             dt = clock.tick(60) / 1000
-            fall_timer += dt
+            self.fall_timer += dt
 
-            if fall_timer >= fall_speed:
-                self.current_piece.y += 1
+            if self.fall_timer >= self.fall_speed:
+                self.fall()
 
-                if not is_valid_space(
-                    self.current_piece,
-                    self.grid,
-                ):
-                    self.current_piece.y -= 1
-
-                    lock_piece(
-                        self.current_piece,
-                        self.locked_positions,
-                    )
-
-                    self.grid = create_grid(self.locked_positions)
-
-                    delete_rows(
-                        self.grid,
-                        self.locked_positions,
-                    )
-
-                    self.grid = create_grid(self.locked_positions)
-
-                    self.current_piece = self.next_piece
-                    self.next_piece = get_piece()
-
-                    if not is_valid_space(
-                        self.current_piece,
-                        self.grid,
-                    ):
-                        self.reset()
-                        fall_timer = 0
-
-                fall_timer = 0
-
-                print_grid(self.grid, self.current_piece)
-                print()  
+            print_grid(self.grid, self.current_piece)
+            print()  
         
     def start(self):
         """Starts a Tetris game while rendering with Pygame."""
@@ -318,8 +322,6 @@ class Tetris:
         )
 
         running = True
-        fall_timer = 0
-        fall_speed = 0.5
 
         while running:
             dt = clock.tick(60) / 1000
@@ -336,7 +338,7 @@ class Tetris:
                         self.move_right()
 
                     elif event.key == pygame.K_SPACE:
-                        self.hard_drop(fall_timer)
+                        self.hard_drop()
 
                     elif event.key == pygame.K_UP:
                         self.rotate()
@@ -346,7 +348,7 @@ class Tetris:
             if keys[pygame.K_DOWN]:
                 self.soft_drop()
 
-            fall_timer += dt
+            self.fall_timer += dt
 
             screen.fill(BLACK)
             draw_grid(
@@ -355,38 +357,9 @@ class Tetris:
                 self.current_piece,
             )
 
-            if fall_timer >= fall_speed:
-                self.current_piece.y += 1
-
-                if not is_valid_space(
-                    self.current_piece,
-                    self.grid,
-                ):
-                    self.current_piece.y -= 1
-
-                    lock_piece(
-                        self.current_piece,
-                        self.locked_positions,
-                    )
-
-                    self.grid = create_grid(self.locked_positions)
-                    delete_rows(
-                        self.grid,
-                        self.locked_positions,
-                    )
-                    self.grid = create_grid(self.locked_positions)
-
-                    self.current_piece = self.next_piece
-                    self.next_piece = get_piece()
-
-                    if not is_valid_space(
-                        self.current_piece,
-                        self.grid,
-                    ):
-                        self.reset()
-                        fall_timer = 0
-
-                fall_timer = 0
+            if self.fall_timer >= self.fall_speed:
+                self.fall()
+                self.fall_timer = 0
 
             pygame.display.flip()
 
