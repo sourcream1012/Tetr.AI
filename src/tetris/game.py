@@ -192,12 +192,21 @@ class Tetris:
         self.fall_speed = 0.75
 
     def format_ai_readable(self):
-        new_grid = [[0 for _ in range(10)] for _ in range(20)]
+        """Formats the current game state into a 2D array that can be used as the inputs for an AI model."""
+        new_grid = [[0 for _ in range(BOARD_WIDTH)] for _ in range(BOARD_HEIGHT)]
 
-        for row in self.grid:
-            for cell in self.grid:
-                if cell != (0, 0, 0):
+        # Locked pieces
+        for row in range(BOARD_HEIGHT):
+            for cell in range(BOARD_WIDTH):
+                if self.grid[row][cell] != BLACK:
                     new_grid[row][cell] = 1
+
+        # Current falling piece
+        for x, y in piece.get_piece_positions(self.current_piece):
+            if 0 <= x < BOARD_WIDTH and 0 <= y < BOARD_HEIGHT:
+                new_grid[y][x] = 1
+
+        return new_grid
 
     def move_left(self):
         self.current_piece.x -= 1
@@ -300,19 +309,64 @@ class Tetris:
 
         self.fall_timer = 0
 
-    def start_ai_env(self):
-        """Starts a Tetris game without rendering with Pygame. Used for training the AI."""
-        clock = pygame.time.Clock()
+    def step(self, action):
+        if action == 0:
+            pass
+        elif action == 1:
+            self.move_left()
+        elif action == 2:
+            self.move_right()
+        elif action == 3:
+            self.rotate()
+        elif action == 4:
+            self.hard_drop()
+        else:
+            raise ValueError(f"Invalid action: {action}")
 
-        while True:
+        return self.format_ai_readable() 
+
+    def start_ai_env(self, render=False):
+        """Starts the Tetris environment for AI training."""
+        clock = pygame.time.Clock()
+        running = True
+
+        if render:
+            screen = pygame.display.set_mode(
+                (SCREEN_WIDTH, SCREEN_HEIGHT)
+            )
+
+        while running:
             dt = clock.tick(60) / 1000
             self.fall_timer += dt
 
-            if self.fall_timer >= self.fall_speed:
-                self.fall()
+            if render:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
 
-            print_grid(self.grid, self.current_piece)
-            print()  
+                if self.fall_timer >= self.fall_speed:
+                    self.fall()
+
+                if render:
+                    screen.fill(BLACK)
+
+                    draw_grid(
+                        screen,
+                        self.grid,
+                        self.current_piece,
+                    )
+
+                    pygame.display.flip()
+
+                else:
+                    print_grid(
+                        self.grid,
+                        self.current_piece,
+                    )
+                    print()
+
+        if render:
+            pygame.quit()  
         
     def start(self):
         """Starts a Tetris game while rendering with Pygame."""
