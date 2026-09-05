@@ -325,21 +325,21 @@ class Tetris:
 
         return self.format_ai_readable() 
 
-    def start_ai_env(self, render=False):
-        """Starts the Tetris environment for AI training."""
-        clock = pygame.time.Clock()
+    def start_ai_env(self, render=False, terminal=True, terminal_interval=100):
         running = True
+        steps = 0
 
         if render:
             screen = pygame.display.set_mode(
                 (SCREEN_WIDTH, SCREEN_HEIGHT)
             )
+            clock = pygame.time.Clock()
 
         while running:
-            dt = clock.tick(60) / 1000
-            self.fall_timer += dt
-
             if render:
+                dt = clock.tick(60) / 1000
+                self.fall_timer += dt
+
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
@@ -347,23 +347,29 @@ class Tetris:
                 if self.fall_timer >= self.fall_speed:
                     self.fall()
 
-                if render:
-                    screen.fill(BLACK)
+                screen.fill(BLACK)
 
-                    draw_grid(
-                        screen,
-                        self.grid,
-                        self.current_piece,
-                    )
+                draw_grid(
+                    screen,
+                    self.grid,
+                    self.current_piece,
+                )
 
-                    pygame.display.flip()
+                pygame.display.flip()
+            else:
+                self.fall()
 
-                else:
+                steps += 1
+
+                if terminal and steps % terminal_interval == 0:
+                    print("\033[H\033[J", end="")
+
                     print_grid(
                         self.grid,
                         self.current_piece,
                     )
-                    print()
+
+                    print(f"\nSteps: {steps}")
 
         if render:
             pygame.quit()  
