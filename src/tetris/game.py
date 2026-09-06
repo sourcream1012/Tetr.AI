@@ -181,6 +181,7 @@ class Tetris:
         self.score = 0
         self.fall_timer = 0
         self.fall_speed = 0.75
+        self.done = False
 
     def reset(self):
         self.locked_positions = {}
@@ -259,7 +260,7 @@ class Tetris:
         )
         
         self.grid = create_grid(self.locked_positions)
-        delete_rows(
+        cleared_rows = delete_rows(
             self.grid,
             self.locked_positions,
         )
@@ -272,8 +273,8 @@ class Tetris:
             self.current_piece,
             self.grid,
         ):
-            self.reset()
-            self.fall_timer = 0
+            self.done = True
+            return cleared_rows
 
     def fall(self):
         self.current_piece.y += 1
@@ -291,7 +292,7 @@ class Tetris:
         
             self.grid = create_grid(self.locked_positions)
         
-            delete_rows(
+            cleared_rows = delete_rows(
                 self.grid,
                 self.locked_positions,
             )
@@ -305,11 +306,18 @@ class Tetris:
                 self.current_piece,
                 self.grid,
             ):
-                self.reset()
+                self.done = True
 
         self.fall_timer = 0
+        return cleared_rows
 
     def step(self, action):
+        if self.done:
+            self.reset()
+            self.fall_timer = 0
+            self.done = False
+            return self.format_ai_readable(), True, 0
+        
         if action == 0:
             pass
         elif action == 1:
@@ -319,11 +327,14 @@ class Tetris:
         elif action == 3:
             self.rotate()
         elif action == 4:
-            self.hard_drop()
+            cleared_rows = self.hard_drop()
         else:
             raise ValueError(f"Invalid action: {action}")
 
-        return self.format_ai_readable() 
+        if action != 4:
+            cleared_rows =self.fall()
+
+        return self.format_ai_readable(), self.done, cleared_rows
 
     def start_ai_env(self, render=False, terminal=True, terminal_interval=100):
         running = True
@@ -399,6 +410,9 @@ class Tetris:
 
                     elif event.key == pygame.K_SPACE:
                         self.hard_drop()
+                        if self.done:
+                            self.reset()
+                            self.fall_timer = 0
 
                     elif event.key == pygame.K_UP:
                         self.rotate()
@@ -419,6 +433,8 @@ class Tetris:
 
             if self.fall_timer >= self.fall_speed:
                 self.fall()
+                if self.done:
+                    self.reset()
                 self.fall_timer = 0
 
             pygame.display.flip()
