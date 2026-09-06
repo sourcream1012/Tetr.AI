@@ -274,9 +274,11 @@ class Tetris:
             self.grid,
         ):
             self.done = True
-            return cleared_rows
+
+        return cleared_rows
 
     def fall(self):
+        cleared_rows = 0
         self.current_piece.y += 1
         
         if not is_valid_space(
@@ -309,7 +311,10 @@ class Tetris:
                 self.done = True
 
         self.fall_timer = 0
-        return cleared_rows
+        if cleared_rows:
+            return cleared_rows
+        else:
+            return 0
 
     def step(self, action):
         if self.done:
@@ -332,7 +337,7 @@ class Tetris:
             raise ValueError(f"Invalid action: {action}")
 
         if action != 4:
-            cleared_rows =self.fall()
+            cleared_rows = self.fall()
 
         return self.format_ai_readable(), self.done, cleared_rows
 
