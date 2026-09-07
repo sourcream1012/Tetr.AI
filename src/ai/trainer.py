@@ -1,4 +1,5 @@
 import random
+from pathlib import Path
 
 from . import model
 
@@ -65,6 +66,24 @@ class Trainer:
             reward -= 25
 
         return reward
+
+    def save_model(self, name, episode):
+        model_dir = Path("models") / name
+        model_dir.mkdir(parents=True, exist_ok=True)
+
+        model_path = model_dir / "checkpoint.pth"
+
+        torch.save(
+            {
+                "model_state": self.model.state_dict(),
+                "optimizer_state": self.optimizer.state_dict(),
+                "episode": episode,
+                "epsilon": self.epsilon,
+            },
+            model_path
+        )
+
+        print(f"Saved '{name}' at episode {episode}")
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append(
@@ -154,7 +173,7 @@ class Trainer:
             target_q.mean().item()
         )
 
-    def train(self):
+    def train(self, model_name="John Doe"):
         state = self.Tetris.reset()
 
         episode = 1
@@ -209,5 +228,8 @@ class Trainer:
                 episode_reward = 0
                 episode_rows = 0
                 episode_steps = 0
+
+                if episode % 100 == 0:
+                    self.save_model(model_name, episode)
 
                 state = self.Tetris.reset()   

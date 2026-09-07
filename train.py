@@ -12,5 +12,5 @@ def start_env():
 thread_start_env = threading.Thread(target=start_env)
 thread_start_env.start()
 
-AI_Trainer.train()
+AI_Trainer.train("Tetr.AI")
     
