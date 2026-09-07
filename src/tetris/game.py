@@ -192,6 +192,8 @@ class Tetris:
         self.fall_timer = 0
         self.fall_speed = 0.75
 
+        return self.format_ai_readable()
+
     def format_ai_readable(self):
         """Formats the current game state into a 2D array that can be used as the inputs for an AI model."""
         new_grid = [[0 for _ in range(BOARD_WIDTH)] for _ in range(BOARD_HEIGHT)]

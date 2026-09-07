@@ -4,7 +4,7 @@ import src.tetris.game as game
 import threading
 
 Tetris = game.Tetris()
-AI_Trainer = trainer.Trainer(Tetris)
+AI_Trainer = trainer.Trainer(Tetris, gamma=0.9)
 
 def start_env():
     Tetris.start_ai_env(True, False, 0)
@@ -12,7 +12,5 @@ def start_env():
 thread_start_env = threading.Thread(target=start_env)
 thread_start_env.start()
 
-# CORE TRAINING LOOP
-while True:
-    pass
+AI_Trainer.train()
     
