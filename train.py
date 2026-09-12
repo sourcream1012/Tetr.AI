@@ -4,7 +4,7 @@ import src.tetris.game as game
 import threading
 
 Tetris = game.Tetris()
-AI_Trainer = trainer.Trainer(Tetris, gamma=0.9)
+AI_Trainer = trainer.Trainer(Tetris)
 
 def start_env():
     Tetris.start_ai_env(True, False, 0)

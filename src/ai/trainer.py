@@ -12,7 +12,7 @@ class Trainer:
         tetris,
         learning_rate=0.001,
         gamma=0.99,
-        epsilon=0.1,
+        epsilon=1,
     ):
         self.Tetris = tetris
 
@@ -56,11 +56,11 @@ class Trainer:
         if cleared_rows == 1:
             reward += 10
         elif cleared_rows == 2:
-            reward += 15
-        elif cleared_rows == 3:
-            reward += 20
-        elif cleared_rows == 4:
             reward += 30
+        elif cleared_rows == 3:
+            reward += 60
+        elif cleared_rows == 4:
+            reward += 80
 
         if done:
             reward -= 25
@@ -228,6 +228,8 @@ class Trainer:
                 episode_reward = 0
                 episode_rows = 0
                 episode_steps = 0
+
+                self.epsilon = max(0.05, self.epsilon * 0.995)
 
                 if episode % 100 == 0:
                     self.save_model(model_name, episode)
