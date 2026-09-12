@@ -191,6 +191,7 @@ class Tetris:
         self.score = 0
         self.fall_timer = 0
         self.fall_speed = 0.75
+        self.done = False
 
         return self.format_ai_readable()
 
@@ -322,7 +323,6 @@ class Tetris:
         if self.done:
             self.reset()
             self.fall_timer = 0
-            self.done = False
             return self.format_ai_readable(), True, 0
         
         if action == 0:
