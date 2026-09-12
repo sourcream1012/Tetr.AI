@@ -13,12 +13,14 @@ class Trainer:
         learning_rate=0.001,
         gamma=0.99,
         epsilon=1,
+        target_update_freq=5000
     ):
         self.Tetris = tetris
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.model = model.TetrisAI().to(self.device)
+        self.target_model = model.TetrisAI().to(self.device)
 
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), 
@@ -29,6 +31,7 @@ class Trainer:
 
         self.gamma = gamma
         self.epsilon = epsilon
+        self.target_update_freq = target_update_freq
 
         self.memory = []
 
@@ -150,7 +153,7 @@ class Trainer:
         ).squeeze(1)
 
         with torch.no_grad():
-            next_q_values = self.model(next_states)
+            next_q_values = self.target_model(next_states)
 
             max_next_q = next_q_values.max(dim=1).values
 
@@ -233,5 +236,7 @@ class Trainer:
 
                 if episode % 100 == 0:
                     self.save_model(model_name, episode)
+                elif episode % self.target_update_freq == 0:
+                    self.target_model.load_state_dict(self.model.state_dict())
 
                 state = self.Tetris.reset()   
