@@ -1,5 +1,6 @@
 import random
 from pathlib import Path
+from collections import deque
 
 from . import model
 
@@ -33,7 +34,7 @@ class Trainer:
         self.epsilon = epsilon
         self.target_update_freq = target_update_freq
 
-        self.memory = []
+        self.memory = deque(maxlen=100_000)
 
     def state_to_tensor(self, state):
         return torch.tensor(
