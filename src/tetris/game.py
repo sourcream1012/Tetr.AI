@@ -208,7 +208,7 @@ class Tetris:
         # Current falling piece
         for x, y in piece.get_piece_positions(self.current_piece):
             if 0 <= x < BOARD_WIDTH and 0 <= y < BOARD_HEIGHT:
-                new_grid[y][x] = 1
+                new_grid[y][x] = 2
 
         return new_grid
 
