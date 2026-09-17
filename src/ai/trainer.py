@@ -1,4 +1,5 @@
 import random
+import csv
 from pathlib import Path
 from collections import deque
 
@@ -21,7 +22,7 @@ class Trainer:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.model = model.TetrisAI().to(self.device)
-        self.target_model = model.TetrisAI().to(self.device)
+        self.target_model = model.TetrisAI().to(self.device) 
 
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), 
@@ -35,6 +36,25 @@ class Trainer:
         self.target_update_freq = target_update_freq
 
         self.memory = deque(maxlen=100_000)
+
+        self.log_file = Path("training_logs") / "training.csv"
+        self.log_file.parent.mkdir(parents=True, exist_ok=True)
+
+        if not self.log_file.exists():
+            with open(self.log_file, "w", newline="") as file:
+                writer = csv.writer(file)
+
+                writer.writerow([
+                    "episode",
+                    "reward",
+                    "rows",
+                    "steps",
+                    "loss",
+                    "avg_q",
+                    "target_q",
+                    "epsilon",
+                    "memory"
+                ])
 
     def state_to_tensor(self, state):
         return torch.tensor(
@@ -54,7 +74,7 @@ class Trainer:
 
         return q_values.argmax(dim=1).item()
 
-    def calculate_reward(self, cleared_rows, done):
+    def calculate_reward(self, cleared_rows, done, old_holes, new_holes):
         reward = 0
 
         if cleared_rows == 1:
@@ -66,6 +86,8 @@ class Trainer:
         elif cleared_rows == 4:
             reward += 80
 
+        reward += (new_holes - old_holes) * -10
+
         if done:
             reward -= 25
 
@@ -75,7 +97,7 @@ class Trainer:
         model_dir = Path("models") / name
         model_dir.mkdir(parents=True, exist_ok=True)
 
-        model_path = model_dir / "checkpoint.pth"
+        model_path = model_dir / f"checkpoint_{episode}.pth"
 
         torch.save(
             {
@@ -188,11 +210,17 @@ class Trainer:
         while True:
             action = self.choose_action(state)
 
+            old_holes = self.Tetris.count_holes(state)
+
             next_state, done, cleared_rows = self.Tetris.step(action)
+
+            new_holes = self.Tetris.count_holes(next_state)
 
             reward = self.calculate_reward(
                 cleared_rows,
-                done
+                done,
+                old_holes,
+                new_holes
             )
 
             self.remember(
@@ -227,6 +255,21 @@ class Trainer:
                         f"Memory: {len(self.memory)}"
                     )
 
+                    with open(self.log_file, "a", newline="") as file:
+                        writer = csv.writer(file)
+
+                        writer.writerow([
+                            episode,
+                            episode_reward,
+                            episode_rows,
+                            episode_steps,
+                            loss,
+                            avg_q,
+                            avg_target_q,
+                            self.epsilon,
+                            len(self.memory)
+                        ])
+
                 episode += 1
 
                 episode_reward = 0
@@ -235,7 +278,7 @@ class Trainer:
 
                 self.epsilon = max(0.05, self.epsilon * 0.995)
 
-                if episode % 100 == 0:
+                if episode % 500 == 0:
                     self.save_model(model_name, episode)
                 elif episode % self.target_update_freq == 0:
                     self.target_model.load_state_dict(self.model.state_dict())

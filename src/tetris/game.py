@@ -205,12 +205,32 @@ class Tetris:
                 if self.grid[row][cell] != BLACK:
                     new_grid[row][cell] = 1
 
-        # Current falling piece
         for x, y in piece.get_piece_positions(self.current_piece):
             if 0 <= x < BOARD_WIDTH and 0 <= y < BOARD_HEIGHT:
-                new_grid[y][x] = 2
+                if new_grid[y][x] == 0:
+                    new_grid[y][x] = 2
 
         return new_grid
+
+    def count_holes(self, ai_state):
+        holes = 0
+
+        for x in range(BOARD_WIDTH):
+            block_found = False
+
+            for y in range(BOARD_HEIGHT):
+                cell = ai_state[y][x]
+
+                if cell == 2:
+                    cell = 0
+
+                if cell != 0:
+                    block_found = True
+
+                elif block_found:
+                    holes += 1
+
+        return holes
 
     def move_left(self):
         self.current_piece.x -= 1
