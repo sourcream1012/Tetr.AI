@@ -24,6 +24,9 @@ class Trainer:
         self.model = model.TetrisAI().to(self.device)
         self.target_model = model.TetrisAI().to(self.device) 
 
+        self.target_model.load_state_dict(self.model.state_dict())
+        self.target_model.eval()
+
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), 
             lr=learning_rate
@@ -34,6 +37,7 @@ class Trainer:
         self.gamma = gamma
         self.epsilon = epsilon
         self.target_update_freq = target_update_freq
+        self.training_steps = 0
 
         self.memory = deque(maxlen=100_000)
 
@@ -102,9 +106,11 @@ class Trainer:
         torch.save(
             {
                 "model_state": self.model.state_dict(),
+                "target_model_state": self.target_model.state_dict(),
                 "optimizer_state": self.optimizer.state_dict(),
                 "episode": episode,
                 "epsilon": self.epsilon,
+                "training_steps": self.training_steps,
             },
             model_path
         )
@@ -193,6 +199,13 @@ class Trainer:
 
         self.optimizer.step()
 
+        self.training_steps += 1
+
+        if self.training_steps % self.target_update_freq == 0:
+            self.target_model.load_state_dict(
+                self.model.state_dict()
+        )
+
         return (
             loss.item(),
             current_q.mean().item(),
@@ -270,17 +283,19 @@ class Trainer:
                             len(self.memory)
                         ])
 
+                
+                self.epsilon = max(
+                    0.05,
+                    self.epsilon * 0.999
+                )
+
+                if episode % 500 == 0:
+                    self.save_model(model_name, episode)
+
                 episode += 1
 
                 episode_reward = 0
                 episode_rows = 0
                 episode_steps = 0
 
-                self.epsilon = max(0.05, self.epsilon * 0.995)
-
-                if episode % 500 == 0:
-                    self.save_model(model_name, episode)
-                elif episode % self.target_update_freq == 0:
-                    self.target_model.load_state_dict(self.model.state_dict())
-
-                state = self.Tetris.reset()   
+                state = self.Tetris.reset()
