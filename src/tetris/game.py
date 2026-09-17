@@ -363,7 +363,7 @@ class Tetris:
 
         return self.format_ai_readable(), self.done, cleared_rows
 
-    def start_ai_env(self, render=False, terminal=True, terminal_interval=100):
+    def start_ai_env(self, render=False, terminal=False, terminal_interval=100):
         running = True
         steps = 0
 
