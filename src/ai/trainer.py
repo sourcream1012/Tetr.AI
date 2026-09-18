@@ -90,7 +90,7 @@ class Trainer:
         elif cleared_rows == 4:
             reward += 80
 
-        reward += (new_holes - old_holes) * -10
+        reward += (new_holes - old_holes) * -5
 
         if done:
             reward -= 25
@@ -122,8 +122,8 @@ class Trainer:
             (state, action, reward, next_state, done)
         )
 
-    def train_step(self, batch_size=64):
-        if len(self.memory) < batch_size:
+    def train_step(self, batch_size=64, min_memory=5000):
+        if len(self.memory) < min_memory:
             return
 
         batch = random.sample(
@@ -286,7 +286,7 @@ class Trainer:
                 
                 self.epsilon = max(
                     0.05,
-                    self.epsilon * 0.999
+                    self.epsilon * 0.9999
                 )
 
                 if episode % 500 == 0:
