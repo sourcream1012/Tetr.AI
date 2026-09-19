@@ -1,6 +1,48 @@
 # Tetr.AI
 A neural network made to play the popular russian game Tetris. Made for the Hack Club Stardance YSWS.
 
+## Getting started
+
+### Windows setup
+
+On Windows to install dependencies and set up a python virtual environment run:
+
+[Windows Setup](setup.bat)
+
+After the setup is complete activate the virtual environment with:
+
+./.venv/Scripts/activate.bat
+
+If you are experienced with PyTorch or neural networks and want to use a specific CUDA build, install the appropriate PyTorch version for your system separately.
+
+### Linux setup
+
+On linux to install dependencies and set up a python virtual environment run:
+
+bash setup.sh
+
+Then activate the virtual environment with:
+
+source .venv/bin/activate
+
+If you are experienced with PyTorch or neural networks and want to use a specific CUDA build, install the appropriate PyTorch version for your system separately.
+
+### Training and running models
+
+**Training:**
+Feel free to change reward, epsilon, gamma, and any other parameter that can change the results of your training inside of [trainer.py](src/ai/trainer.py)
+
+To run your trainer and actually train your model run [train.py](train.py)
+
+The script will prompt you to input the name of the model you want to train.
+
+**Running models:**
+To run trained models run [run.py](run.py) 
+
+The script will display the available models and prompt you to select one.
+
+You will then be prompted to select the checkpoint you want to load. By default, model checkpoints are saved every 500 training iterations unless you change the checkpoint interval.
+
 ## Model History
 
 ### Tetr.AI-V1 - Failed experiment
