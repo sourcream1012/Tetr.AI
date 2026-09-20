@@ -222,25 +222,31 @@ class Trainer:
 
     def choose_batch(self, batch_size=64):
         cleared_rows_bias = 8
-        cleared = [m for m in self.memory if m[5] >= 1]
-        batch = []
 
-        if len(cleared) < 8:
-            batch = random.sample(
-                self.memory,
-                batch_size
-            )
-        else:
-            batch = random.sample(
-                self.memory,
-                batch_size - cleared_rows_bias
-            )
-            batch.append(
-                random.sample(
-                    cleared,
-                    cleared_rows_bias
-                )
-            )
+        cleared = [
+            memory
+            for memory in self.memory
+            if memory[5] >= 1
+        ]
+
+        cleared_sample_size = min(
+            cleared_rows_bias,
+            len(cleared)
+        )
+
+        cleared_batch = random.sample(
+            cleared,
+            cleared_sample_size
+        )
+
+        normal_batch = random.sample(
+            self.memory,
+            batch_size - cleared_sample_size
+        )
+
+        batch = normal_batch + cleared_batch
+
+        random.shuffle(batch)
 
         return batch
 
@@ -256,7 +262,7 @@ class Trainer:
         next_states = []
         dones = []
 
-        for state, action, reward, next_state, done in batch:
+        for state, action, reward, next_state, done, cleared_rows in batch:
             states.append(state)
             actions.append(action)
             rewards.append(reward)
@@ -373,7 +379,8 @@ class Trainer:
                 action,
                 reward,
                 next_state,
-                done
+                done,
+                cleared_rows
             )
 
             training_data = self.train_step()
