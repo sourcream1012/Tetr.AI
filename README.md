@@ -43,6 +43,15 @@ The script will display the available models and prompt you to select one.
 
 You will then be prompted to select the checkpoint you want to load. By default, model checkpoints are saved every 500 training iterations unless you change the checkpoint interval.
 
+## Project status
+Tetr.AI is currently a fully functional Tetris environment where a neural network can play Tetris.
+
+The training pipeline, checkpoint system, model runner, game environment, and logging system are all functional.
+
+The included trained models are purely experimental. They have learned how to survive but they can't clear rows. Due to the time it takes to train reinforcement learning models, the current release will not contain fully trained models capable of playing Tetris well.
+
+I will continue to develop for the time being following my first release and my ship to Stardance. The development would particularly be around reward shaping and solving my current sparse-reward problem.
+
 ## Model History
 
 ### Tetr.AI-V1 - Failed experiment
