@@ -2,11 +2,36 @@ import random
 import csv
 from pathlib import Path
 from collections import deque
+import re
 
 from . import model
 
 import torch
 import torch.nn as nn
+
+def check_model_exists(model_name):
+    model_path = Path(f"models/{model_name}")
+    return model_path.exists()
+
+def get_available_episodes(model_path):
+    episodes = []
+
+    pattern = re.compile(
+        r"checkpoint_(\d+)\.pth$"
+    )
+
+    for file in model_path.iterdir():
+        if not file.is_file():
+            continue
+
+        match = pattern.fullmatch(file.name)
+
+        if match:
+            episodes.append(
+                int(match.group(1))
+            )
+
+    return sorted(episodes)
 
 class Trainer:
     def __init__(
@@ -111,11 +136,84 @@ class Trainer:
                 "episode": episode,
                 "epsilon": self.epsilon,
                 "training_steps": self.training_steps,
+                "memory": self.memory
             },
             model_path
         )
 
         print(f"Saved '{name}' at episode {episode}")
+
+    def load_model(self, model_name):
+        model_path = Path(f"models/{model_name}")
+        if not model_path.exists():
+            return
+
+        episodes = get_available_episodes(model_path)
+        most_recent_episode = episodes[len(episodes) - 1]
+
+        model_file = Path(f"models/{model_name}/checkpoint_{most_recent_episode}.pth")
+
+        checkpoint = torch.load(
+            model_file, 
+            map_location=self.device,
+            weights_only=False
+        )
+
+        self.model.load_state_dict(
+            checkpoint['model_state']
+        )
+
+        self.target_model.load_state_dict(
+            checkpoint['target_model_state']
+        )
+
+        self.optimizer.load_state_dict(
+            checkpoint['optimizer_state']
+        )
+
+        self.epsilon = checkpoint['epsilon']
+        self.training_steps = checkpoint['training_steps']
+        self.memory = checkpoint['memory']
+
+        return checkpoint['episode'] + 1
+
+    def trim_training_log(self, episode):
+        if not self.log_file.exists():
+            return
+
+        with open(self.log_file, "r", newline="") as file:
+            reader = csv.reader(file)
+            rows = list(reader)
+
+        if not rows:
+            return
+
+        header = rows[0]
+        data = rows[1:]
+
+        kept_rows = []
+
+        for row in data:
+            if not row:
+                continue
+
+            logged_episode = int(row[0])
+
+            if logged_episode <= episode:
+                kept_rows.append(row)
+
+        removed = len(data) - len(kept_rows)
+
+        with open(self.log_file, "w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(header)
+            writer.writerows(kept_rows)
+
+        if removed > 0:
+           print(
+                f"Removed {removed} log entries after "
+                f"episode {episode}."
+           )
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append(
@@ -214,11 +312,24 @@ class Trainer:
 
     def train(self, model_name="John Doe"):
         state = self.Tetris.reset()
+        model_exists = check_model_exists(model_name)
 
         episode = 1
         episode_reward = 0
         episode_rows = 0
         episode_steps = 0
+
+        if model_exists:
+            print(
+                f"Model already exists. "
+                f"Resuming training for {model_name}."
+            )
+
+            loaded_episode = self.load_model(model_name)
+
+            self.trim_training_log(loaded_episode)
+
+            episode = loaded_episode + 1
 
         while True:
             action = self.choose_action(state)
