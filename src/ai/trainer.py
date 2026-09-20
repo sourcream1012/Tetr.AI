@@ -107,18 +107,18 @@ class Trainer:
         reward = 0
 
         if cleared_rows == 1:
-            reward += 10
+            reward += 20
         elif cleared_rows == 2:
-            reward += 30
-        elif cleared_rows == 3:
             reward += 60
+        elif cleared_rows == 3:
+            reward += 120
         elif cleared_rows == 4:
-            reward += 80
+            reward += 200
 
-        reward += (new_holes - old_holes) * -5
+        reward += (new_holes - old_holes) * -2
 
         if done:
-            reward -= 25
+            reward -= 50
 
         return reward
 
@@ -215,19 +215,40 @@ class Trainer:
                 f"episode {episode}."
            )
 
-    def remember(self, state, action, reward, next_state, done):
+    def remember(self, state, action, reward, next_state, done, cleared_rows):
         self.memory.append(
-            (state, action, reward, next_state, done)
+            (state, action, reward, next_state, done, cleared_rows)
         )
+
+    def choose_batch(self, batch_size=64):
+        cleared_rows_bias = 8
+        cleared = [m for m in self.memory if m[5] >= 1]
+        batch = []
+
+        if len(cleared) < 8:
+            batch = random.sample(
+                self.memory,
+                batch_size
+            )
+        else:
+            batch = random.sample(
+                self.memory,
+                batch_size - cleared_rows_bias
+            )
+            batch.append(
+                random.sample(
+                    cleared,
+                    cleared_rows_bias
+                )
+            )
+
+        return batch
 
     def train_step(self, batch_size=64, min_memory=5000):
         if len(self.memory) < min_memory:
             return
 
-        batch = random.sample(
-            self.memory,
-            batch_size
-        )
+        batch = self.choose_batch(batch_size)
 
         states = []
         actions = []
