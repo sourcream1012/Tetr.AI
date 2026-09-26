@@ -8,7 +8,7 @@ import src.ai.model as model
 import src.tetris.game as game
 
 
-MODELS_DIR = Path("models")
+MODELS_DIR = Path("models/")
 
 DEVICE = torch.device(
     "cuda" if torch.cuda.is_available() else "cpu"
