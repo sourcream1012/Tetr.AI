@@ -5,43 +5,16 @@ A neural network made to play the popular russian game Tetris. Made for the Hack
 
 ### Windows setup
 
-On Windows to install dependencies and set up a python virtual environment run:
+On windows, run:
 
-[Windows Setup](setup.bat)
+- **TetrAI-TrainAI.exe** to train an AI. If you want to change training values change them in training_config.json
+- **TetrAI-RunAI.exe** to run an AI model.
+- **Tetr.AI-PlayTetris.exe** to play Tetris for fun.
+- **Tetr.AI-Graph.exe** to graph a models statistics from their training logs.
 
-After the setup is complete activate the virtual environment with:
+### Linux
 
-./.venv/Scripts/activate.bat
-
-If you are experienced with PyTorch or neural networks and want to use a specific CUDA build, install the appropriate PyTorch version for your system separately.
-
-### Linux setup
-
-On linux to install dependencies and set up a python virtual environment run:
-
-bash setup.sh
-
-Then activate the virtual environment with:
-
-source .venv/bin/activate
-
-If you are experienced with PyTorch or neural networks and want to use a specific CUDA build, install the appropriate PyTorch version for your system separately.
-
-### Training and running models
-
-**Training:**
-Feel free to change reward, epsilon, gamma, and any other parameter that can change the results of your training inside of [trainer.py](src/ai/trainer.py)
-
-To run your trainer and actually train your model run [train.py](train.py)
-
-The script will prompt you to input the name of the model you want to train.
-
-**Running models:**
-To run trained models run [run.py](run.py) 
-
-The script will display the available models and prompt you to select one.
-
-You will then be prompted to select the checkpoint you want to load. By default, model checkpoints are saved every 500 training iterations unless you change the checkpoint interval.
+Unfortunatly I am not sure if the executable files work on linux.
 
 ## Project status
 Tetr.AI is currently a fully functional Tetris environment where a neural network can play Tetris.
