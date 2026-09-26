@@ -1,0 +1,25 @@
+{
+    "learning_rate": 0.001,
+    "gamma": 0.99,
+
+    "epsilon_start": 1.0,
+    "epsilon_min": 0.05,
+    "epsilon_decay": 0.9999,
+
+    "target_update_frequency": 5000,
+
+    "replay_memory_size": 100000,
+    "batch_size": 64,
+    "minimum_replay_memory": 5000,
+
+    "checkpoint_frequency": 500,
+
+    "rewards": {
+        "single_line": 10,
+        "double_line": 30,
+        "triple_line": 60,
+        "tetris": 80,
+        "hole_penalty": -5,
+        "game_over_penalty": -25
+    }
+}
